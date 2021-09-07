@@ -3,8 +3,8 @@
 # SurfaceNet: Adversarial SVBRDF Estimation from a Single Image     
 [Giuseppe Vecchio](https://github.com/giuvecchio), [Simone Palazzo](https://github.com/simopal6) and Concetto Spampinato
 
+[![Paper](http://img.shields.io/badge/paper-arxiv.2107.11298-B31B1B.svg)](https://arxiv.org/abs/2107.11298)
 [![Conference](http://img.shields.io/badge/ICCV-2021-4b44ce.svg)](http://iccv2021.thecvf.com/home)
-[![Conference](http://img.shields.io/badge/arXiv-b31b1b.svg)](https://arxiv.org/abs/2107.11298)
 
 <!--  
 Conference   
