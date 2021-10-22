@@ -4,7 +4,7 @@
 [Giuseppe Vecchio](https://github.com/giuvecchio), [Simone Palazzo](https://github.com/simopal6) and Concetto Spampinato
 
 [![Paper](http://img.shields.io/badge/paper-arxiv.2107.11298-B31B1B.svg)](https://arxiv.org/abs/2107.11298)
-[![Conference](http://img.shields.io/badge/ICCV-2021-4b44ce.svg)](http://iccv2021.thecvf.com/home)
+[![Conference](http://img.shields.io/badge/ICCV-2021-4b44ce.svg)](https://openaccess.thecvf.com/content/ICCV2021/html/Vecchio_SurfaceNet_Adversarial_SVBRDF_Estimation_From_a_Single_Image_ICCV_2021_paper.html)
 
 <!--  
 Conference   
@@ -56,20 +56,12 @@ python main.py
 
 ### Citation   
 ```
-@article{DBLP:journals/corr/abs-2107-11298,
-  author    = {Giuseppe Vecchio and
-               Simone Palazzo and
-               Concetto Spampinato},
-  title     = {SurfaceNet: Adversarial {SVBRDF} Estimation from a Single Image},
-  journal   = {CoRR},
-  volume    = {abs/2107.11298},
-  year      = {2021},
-  url       = {https://arxiv.org/abs/2107.11298},
-  archivePrefix = {arXiv},
-  eprint    = {2107.11298},
-  timestamp = {Thu, 29 Jul 2021 16:14:15 +0200},
-  biburl    = {https://dblp.org/rec/journals/corr/abs-2107-11298.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+@inproceedings{vecchio2021surfacenet,
+  title={SurfaceNet: Adversarial SVBRDF Estimation from a Single Image},
+  author={Vecchio, Giuseppe and Palazzo, Simone and Spampinato, Concetto},
+  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
+  pages={12840--12848},
+  year={2021}
 }
 ```   
 
