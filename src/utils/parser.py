@@ -15,6 +15,7 @@ def parse():
     parser.add_argument('--grads-hist', action='store_true')
     parser.add_argument('--save-every', type=int, default=100)
     # Training options
+    parser.add_argument('--train-minibatches', type=int, default=200)
     parser.add_argument('--train-real', action='store_true')
     parser.add_argument('--train-adversarial', action='store_true')
     parser.add_argument('--batch-size', type=int, default=64)
