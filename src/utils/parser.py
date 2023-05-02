@@ -17,6 +17,7 @@ def parse():
     # Training options
     parser.add_argument('--train-real', action='store_true')
     parser.add_argument('--train-adversarial', action='store_true')
+    parser.add_argument('--adv-start', type=int, default=300000)
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--optim', default='Adam')
     parser.add_argument('--lr', type=float, default=0.001)

@@ -74,51 +74,37 @@ class Trainer:
 
 
     def train(self):
-        # Get args
-        saver = self.args.saver
-        log_every = self.args.log_every
-        save_every = self.args.save_every
-        
         # Start training
         for epoch in range(self.args.epochs):
-            self.train_epoch(epoch)
+            self.run_epoch(epoch, train=True)
 
-            self.eval_epoch(epoch)
+            self.run_epoch(epoch, train=False)
+
+            if epoch % self.args.save_every == 0:
+                self.args.saver.save_model(self.net, "net", epoch)
 
 
-    def train_epoch(self):
-        self.net.train()
+    def run_epoch(self, epoch_idx, train=True):
+        if train:
+            self.net.train()
+        else:
+            self.net.eval()
 
+        split = "train" if train else "test"
         # Training loop
-        for batch_idx, batch in enumerate(tqdm(self.loaders['train']['synth'])):
-            
-            losses, maps = self.forward_batch(batch, train=True)
+        for batch_idx, batch in enumerate(tqdm(self.loaders[split]['synth'])):
+            step_idx = epoch_idx * len(self.loaders[split]['synth']) + batch_idx
+            losses, maps = self.forward_batch(batch, step_idx, train=train)
+
+            for k, v in losses.items():
+                self.args.saver.dump_metric(v, step_idx, split, k)
+
+            if batch_idx % self.args.log_every == 0:
+                self.args.saver.dump_batch_image(maps['gen'], step_idx, split, 'gen', nrow=5, do_tb=True)
+                self.args.saver.dump_batch_image(maps['gt'], step_idx, split, 'gt', nrow=5, do_tb=True) 
 
 
-    def eval_epoch(self):
-        pass
-    
-
-    def __train_discr(self, net, optim, real_batch, fake_batch):
-
-        pred_real = net(real_batch)
-        loss_real = mse_loss(pred_real, torch.ones(
-            pred_real.shape, device=self.device))
-
-        pred_fake = net(fake_batch)
-        loss_fake = mse_loss(pred_fake, torch.zeros(
-            pred_fake.shape, device=self.device))
-
-        loss_discr = 0.5 * (loss_real + loss_fake)
-
-        optim.zero_grad()
-        loss_discr.backward()
-        optim.step()
-
-        return loss_discr    
-
-
-    def forward_batch(self, batch, train=True, real=False):
+    def forward_batch(self, batch, step_idx, train=True, real=False):
         # Move input data to device
         inputs = batch["Render"].to(self.device)
 
@@ -130,11 +116,11 @@ class Trainer:
 
             maps = {
                 'gen': make_plot_maps(inputs, outputs),
-                'real': make_plot_maps(inputs, targets)
+                'gt': make_plot_maps(inputs, targets)
             }
 
             if train:
-                return self.train_batch(inputs, outputs, targets), maps
+                return self.train_batch(inputs, outputs, targets, step_idx), maps
             else:
                 return self.eval_batch(outputs, targets), maps
         else:
@@ -143,7 +129,7 @@ class Trainer:
             return self.train_real(inputs, outputs), self.make_plot_maps(inputs, outputs)
 
 
-    def train_batch(self, inputs, outputs, targets):
+    def train_batch(self, inputs, outputs, targets, step_idx):
         # Initialize loss dict
         losses = {}
 
@@ -160,18 +146,19 @@ class Trainer:
                                self.optim_patch_discr, real_batch, fake_batch.detach())
 
             # Train generator
-            gen_batch = torch.cat([inputs, *[outputs[x]
-                                             for x in self.maps]], 1)
+            if step_idx >= self.args.adv_start:
+                gen_batch = torch.cat([inputs, *[outputs[x]
+                                                for x in self.maps]], 1)
 
-            pred_patch = self.discriminator(gen_batch)
+                pred_patch = self.discriminator(gen_batch)
 
-            discr_loss = self.alpha_adv * \
-                self.mse_loss(pred_patch, torch.ones(
-                    pred_patch.shape, device=self.device))
+                discr_loss = self.alpha_adv * \
+                    self.mse_loss(pred_patch, torch.ones(
+                        pred_patch.shape, device=self.device))
 
-            losses[f'adv_loss'] = discr_loss.item()
+                losses[f'adv_loss'] = discr_loss.item()
 
-            loss += discr_loss
+                loss += discr_loss
 
         for key in outputs.keys():
             out, tar = outputs[key], targets[key]
@@ -213,3 +200,22 @@ class Trainer:
             losses[f'{key.lower()}_rmse_un'] = rmse_loss((out + 1) / 2, (tar + 1) / 2)
 
         return losses
+    
+
+    def __train_discr(self, net, optim, real_batch, fake_batch):
+
+        pred_real = net(real_batch)
+        loss_real = mse_loss(pred_real, torch.ones(
+            pred_real.shape, device=self.device))
+
+        pred_fake = net(fake_batch)
+        loss_fake = mse_loss(pred_fake, torch.zeros(
+            pred_fake.shape, device=self.device))
+
+        loss_discr = 0.5 * (loss_real + loss_fake)
+
+        optim.zero_grad()
+        loss_discr.backward()
+        optim.step()
+
+        return loss_discr
