@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 from math import exp
-import numpy as np
 
 
 def gaussian(window_size, sigma):
@@ -134,3 +133,6 @@ class MSSSIM(torch.nn.Module):
     def forward(self, img1, img2):
         # TODO: store window between calls if possible
         return msssim(img1, img2, window_size=self.window_size, size_average=self.size_average)
+    
+def rmse_loss(out, targets):
+    return torch.sqrt(torch.mean((out - targets)**2))

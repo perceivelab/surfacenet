@@ -41,9 +41,9 @@ if __name__ == '__main__':
         args.saver = saver
 
     #net = SurfaceNet()
-    trainer = Trainer(args)
+    trainer = Trainer(args, datasets)
 
-    trainer.train(datasets)
+    trainer.train()
 
     if args.tb:
         # Close saver
