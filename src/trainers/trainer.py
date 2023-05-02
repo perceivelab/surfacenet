@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils.infinite_dataloader import InfiniteDataLoader
 from utils.losses import msssim_loss, rmse_loss
+from utils.utils import make_plot_maps
 
 
 class Trainer:
@@ -93,9 +94,11 @@ class Trainer:
             
             losses, maps = self.forward_batch(batch, train=True)
 
+
     def eval_epoch(self):
         pass
     
+
     def __train_discr(self, net, optim, real_batch, fake_batch):
 
         pred_real = net(real_batch)
@@ -126,8 +129,8 @@ class Trainer:
             targets = {key: batch[key].to(self.device) for key in batch.keys()}
 
             maps = {
-                'gen': self.make_plot_maps(inputs, outputs),
-                'real': self.make_plot_maps(inputs, targets)
+                'gen': make_plot_maps(inputs, outputs),
+                'real': make_plot_maps(inputs, targets)
             }
 
             if train:
