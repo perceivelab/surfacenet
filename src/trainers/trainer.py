@@ -81,7 +81,16 @@ class Trainer:
             self.run_epoch(epoch, train=False)
 
             if epoch % self.args.save_every == 0:
-                self.args.saver.save_model(self.net, "net", epoch)
+                checkpoint = {
+                    'epoch': epoch,
+                    'net': self.net.state_dict().cpu(),
+                    'optim': self.optim.state_dict().cpu(),
+                }
+                if self.adversarial:
+                    checkpoint['discr'] = self.discr.state_dict().cpu()
+                    checkpoint['optim_discr'] = self.optim_discr.state_dict().cpu()
+
+                self.args.saver.save_model(self.net, "surfacenet", epoch)
 
 
     def run_epoch(self, epoch_idx, train=True):
@@ -91,6 +100,7 @@ class Trainer:
             self.net.eval()
 
         split = "train" if train else "test"
+        
         # Training loop
         for batch_idx, batch in enumerate(tqdm(self.loaders[split]['synth'])):
             step_idx = epoch_idx * len(self.loaders[split]['synth']) + batch_idx

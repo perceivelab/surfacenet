@@ -76,6 +76,12 @@ class TBSaver(object):
         # Save
         torch.save(state_dict, self.ckpt_path / f'{name}_{epoch:05d}.pth')
 
+    def save_checkpoint(self, checkpoint: dict, name: str, epoch: int):
+        """
+        Save checkpoint.
+        """
+        torch.save(checkpoint, self.ckpt_path / f'{name}_{epoch:05d}.pth')
+
     def dump_batch_image(self, image: torch.FloatTensor, epoch: int, split: str, name: str, nrow=10):
         """
         Dump image batch into folder (as grid) and tb
