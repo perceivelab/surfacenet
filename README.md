@@ -12,9 +12,7 @@ Conference
 </div>
  
 ## Overview   
-This is the repo where the official PyTorch implementation for paper __"SurfaceNet: Adversarial SVBRDF Estimation from a Single Image"__ will be released.
-
-Our super trained monkeys 🐒 are working night and day to clean up the code, stay tuned...
+This is the official PyTorch implementation for paper __"SurfaceNet: Adversarial SVBRDF Estimation from a Single Image"__.
 
 <br/>
 
