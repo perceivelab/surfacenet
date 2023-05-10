@@ -8,6 +8,7 @@ from models.surfacenet import SurfaceNet
 from torch.nn.functional import binary_cross_entropy, l1_loss, mse_loss
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from datasets.utils import texture_maps
 from utils.infinite_dataloader import InfiniteDataLoader
 from utils.losses import msssim_loss, rmse_loss
 from utils.utils import make_plot_maps
@@ -110,8 +111,8 @@ class Trainer:
                 self.args.saver.dump_metric(v, step_idx, split, k)
 
             if batch_idx % self.args.log_every == 0:
-                self.args.saver.dump_batch_image(maps['gen'], step_idx, split, 'gen', nrow=5, do_tb=True)
-                self.args.saver.dump_batch_image(maps['gt'], step_idx, split, 'gt', nrow=5, do_tb=True) 
+                self.args.saver.dump_batch_image(maps['gen'], step_idx, split, 'gen', nrow=len(texture_maps)+1)
+                self.args.saver.dump_batch_image(maps['gt'], step_idx, split, 'gt', nrow=len(texture_maps)+1) 
 
 
     def forward_batch(self, batch, step_idx, train=True, real=False):

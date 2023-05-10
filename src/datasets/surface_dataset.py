@@ -7,7 +7,7 @@ import torchvision.transforms.functional as TF
 from PIL import Image
 from torch.utils.data import Dataset
 
-from utils import textures_mapping, texture_maps
+from datasets.utils import textures_mapping, texture_maps
 
 
 def MapTransform(load_size=256):

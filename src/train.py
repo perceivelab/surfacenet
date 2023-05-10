@@ -34,9 +34,9 @@ if __name__ == '__main__':
         )
 
     # Define saver
-    if args.tb:
-        saver = TBSaver(args.logdir, args, sub_dirs=list(
-            datasets.keys()), tag=args.tag)
+    if args.tensorboard:
+        saver = TBSaver(args.logdir, args.tag, args.__dict__, sub_dirs=list(
+            datasets.keys()))
         # Add saver to args (e.g. visualizing weights, outputs)
         args.saver = saver
 
