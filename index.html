@@ -5,10 +5,10 @@
   <meta charset="utf-8">
   <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
   <!-- Replace the content tag with appropriate information -->
-  <meta name="description" content="DESCRIPTION META TAG">
-  <meta property="og:title" content="SOCIAL MEDIA TITLE TAG" />
+  <meta name="description" content="SurfaceNet project page">
+  <meta property="og:title" content="SurfaceNet" />
   <meta property="og:description" content="SOCIAL MEDIA DESCRIPTION TAG TAG" />
-  <meta property="og:url" content="URL OF THE WEBSITE" />
+  <meta property="og:url" content="https://perceivelab.github.io/surfacenet/" />
   <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
   <meta property="og:image" content="static/image/your_banner_image.png" />
   <meta property="og:image:width" content="1200" />
@@ -21,7 +21,7 @@
   <meta name="twitter:image" content="static/images/your_twitter_banner_image.png">
   <meta name="twitter:card" content="summary_large_image">
   <!-- Keywords for your paper to be indexed by-->
-  <meta name="keywords" content="KEYWORDS SHOULD BE PLACED HERE">
+  <meta name="keywords" content="materials, deep learning, generative models, 3d, graphics">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
@@ -123,19 +123,71 @@
     </div>
   </section>
 
-
   <!-- Teaser video-->
   <section class="hero teaser">
     <div class="container is-max-desktop">
       <div class="hero-body">
-        <!-- <video poster="" id="tree" autoplay controls muted loop height="100%">
-          <source src="static/videos/banner_video.mp4" type="video/mp4">
-        </video> -->
-        <img src="static/images/hd_sample.jpg" alt="surfacenet banner" />
-        <!-- <h2 class="subtitle has-text-centered">
-          Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat
-          pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
-        </h2> -->
+        <!-- First row -->
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_005.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_020.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_029.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_051.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_016.mp4" type="video/mp4">
+            </video>
+          </div>
+        </div>
+        <!-- Second row -->
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_034.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_104.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_107.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_204.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="column is-one-fifths">
+            <video poster="" id="tree" autoplay muted loop height="100%">
+              <source src="static/videos/tbrender_Render Camera_188.mp4" type="video/mp4">
+            </video>
+          </div>
+        </div>
+        <!-- Caption -->
+        <h2 class="subtitle has-text-centered">
+          Animated samples of materials estimated using <b>SurfaceNet</b>. Top row contains 5 synthetic materials from
+          Deschaintre's dataset. Bottom row contains 5 real materials.
+        </h2>
       </div>
     </div>
   </section>
@@ -187,6 +239,7 @@
               is instead computed for the
               patch discriminator. Circled “C” blocks indicate feature concatenation.
             </p>
+            <img src="static/images/hd_sample.jpg" alt="surfacenet banner" />
           </div>
         </div>
       </div>
