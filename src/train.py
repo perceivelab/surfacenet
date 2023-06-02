@@ -1,13 +1,21 @@
 from datasets.surface_dataset import PicturesDataset, SurfaceDataset
 from trainers.trainer import Trainer
 from utils.parser import parse
-from utils.saver import TBSaver
+
+from accelerate import Accelerator
+from accelerate.tracking import TensorBoardTracker
+
 
 if __name__ == '__main__':
     # Get params
     args = parse()
 
-    # Load dataset
+    #setup accelerator
+    tracker = TensorBoardTracker(run_name=args.tag, logging_dir=args.logdir)
+    accelerator = Accelerator(log_with=tracker)
+    accelerator.init_trackers("surfacenet", config={}, run_name=args.tag)
+
+    # Create datasets
     dset_train = SurfaceDataset(
         args.dataset/'train',
         args.resize
@@ -33,18 +41,8 @@ if __name__ == '__main__':
             args.resize
         )
 
-    # Define saver
-    if args.tensorboard:
-        saver = TBSaver(args.logdir, args.tag, args.__dict__, sub_dirs=list(
-            datasets.keys()))
-        # Add saver to args (e.g. visualizing weights, outputs)
-        args.saver = saver
-
-    #net = SurfaceNet()
-    trainer = Trainer(args, datasets)
-
+    # Create trainer and start training
+    trainer = Trainer(args, accelerator, tracker, datasets)
     trainer.train()
 
-    if args.tb:
-        # Close saver
-        saver.close()
+    accelerator.end_training()

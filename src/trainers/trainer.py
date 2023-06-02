@@ -1,24 +1,33 @@
 from itertools import islice
+import os
 
 import torch
 import torch.nn.functional as F
-import torch.optim as optim
-from models.discriminator import PatchDiscriminator
-from models.surfacenet import SurfaceNet
+import torch.optim
 from torch.nn.functional import binary_cross_entropy, l1_loss, mse_loss
 from torch.utils.data import DataLoader
+from torchvision.utils import make_grid
 from tqdm import tqdm
-from datasets.utils import texture_maps
+
+from accelerate import Accelerator
+
+from models.discriminator import PatchDiscriminator
+from models.surfacenet import SurfaceNet
 from utils.infinite_dataloader import InfiniteDataLoader
 from utils.losses import msssim_loss, rmse_loss
 from utils.utils import make_plot_maps
+from datasets.utils import texture_maps
 
 
 class Trainer:
-    def __init__(self, args, datasets):
+    def __init__(self, args, accelerator:Accelerator, tracker, datasets):
+        # Init accelerator
+        self.accelerator = accelerator #Accelerator()
+        self.tracker = tracker
+
         # Store args
         self.args = args
-        self.device = torch.device(args.device)
+        self.device = torch.device(self.accelerator.device)
 
         # Optimizer params
         optim_params = {'lr': args.lr}
@@ -28,20 +37,26 @@ class Trainer:
             optim_params = {**optim_params, 'momentum': 0.9}
 
         # Create optimizer
-        optim_class = getattr(optim, args.optim)
+        optim_class = getattr(torch.optim, args.optim)
 
         # Setup models
-        self.net = SurfaceNet()
-        self.net.to(self.device)
-        self.optim = optim_class(params=[param for param in self.net.parameters(
-        ) if param.requires_grad], **optim_params)
+        net = SurfaceNet()
+        net.to(self.device)
+        optim = optim_class(params=[param for param in net.parameters() 
+                                    if param.requires_grad], **optim_params)
 
+        self.net = self.accelerator.prepare_model(net)
+        self.optim = self.accelerator.prepare_optimizer(optim, device_placement=True)
+
+        # Setup adversarial training
         if args.train_adversarial:
-            self.discr = PatchDiscriminator()
-            self.discr.to(self.device)
-            self.discr.train()
-            self.optim_discr = optim_class(params=[param for param in self.discr.parameters(
-            ) if param.requires_grad], **optim_params)
+            discr = PatchDiscriminator()
+            discr.to(self.device)
+            optim_discr = optim_class(params=[param for param in discr.parameters() 
+                                              if param.requires_grad], **optim_params)
+
+            self.discr = self.accelerator.prepare_model(discr)
+            self.optim_discr = self.accelerator.prepare_optimizer(optim_discr, device_placement=True)
 
         # Params
         self.alpha_m = 0.88
@@ -58,6 +73,9 @@ class Trainer:
         loader_test = DataLoader(
             datasets['test']['synth'], batch_size=args.batch_size,
             shuffle=False, num_workers=args.workers)
+
+        loader_train = self.accelerator.prepare_data_loader(loader_train, device_placement=True)
+        loader_test = self.accelerator.prepare_data_loader(loader_test, device_placement=True)
 
         self.loaders = {
             'train': {'synth': loader_train},
@@ -79,26 +97,35 @@ class Trainer:
         for epoch in range(self.args.epochs):
             self.run_epoch(epoch, train=True)
 
-            self.run_epoch(epoch, train=False)
+            torch.cuda.empty_cache()
+
+            with torch.no_grad():
+                self.run_epoch(epoch, train=False)
+
+            torch.cuda.empty_cache()
 
             if epoch % self.args.save_every == 0:
                 checkpoint = {
                     'epoch': epoch,
-                    'net': self.net.state_dict().cpu(),
-                    'optim': self.optim.state_dict().cpu(),
+                    'net': self.net.state_dict(),
+                    'optim': self.optim.state_dict(),
                 }
-                if self.adversarial:
-                    checkpoint['discr'] = self.discr.state_dict().cpu()
-                    checkpoint['optim_discr'] = self.optim_discr.state_dict().cpu()
+                if self.args.train_adversarial:
+                    checkpoint['discr'] = self.discr.state_dict()
+                    checkpoint['optim_discr'] = self.optim_discr.state_dict()
 
-                self.args.saver.save_model(self.net, "surfacenet", epoch)
+                self.accelerator.save(checkpoint, f"surfacenet_{epoch}.pth")
 
 
     def run_epoch(self, epoch_idx, train=True):
         if train:
             self.net.train()
+            if self.args.train_adversarial:
+                self.discr.train()
         else:
             self.net.eval()
+            if self.args.train_adversarial:
+                self.discr.eval()
 
         split = "train" if train else "test"
         
@@ -108,22 +135,26 @@ class Trainer:
             losses, maps = self.forward_batch(batch, step_idx, train=train)
 
             for k, v in losses.items():
-                self.args.saver.dump_metric(v, step_idx, split, k)
+                self.tracker.log({f"{split}/{k}": v}, step_idx)
 
             if batch_idx % self.args.log_every == 0:
-                self.args.saver.dump_batch_image(maps['gen'], step_idx, split, 'gen', nrow=len(texture_maps)+1)
-                self.args.saver.dump_batch_image(maps['gt'], step_idx, split, 'gt', nrow=len(texture_maps)+1) 
+                log_maps = {}
+                for k, v in maps.items():
+                    image = make_grid(v, nrow=len(texture_maps)+1)
+                    log_maps[f"{split}/{k}"] = image.unsqueeze(0)
+
+                self.tracker.log_images(log_maps, step_idx)
 
 
     def forward_batch(self, batch, step_idx, train=True, real=False):
         # Move input data to device
-        inputs = batch["Render"].to(self.device)
+        inputs = batch["render"]#.to(self.device)
 
         # Run model
         outputs = self.net(inputs)
 
         if not real:
-            targets = {key: batch[key].to(self.device) for key in batch.keys()}
+            targets = {key: batch[key] for key in batch.keys()}
 
             maps = {
                 'gen': make_plot_maps(inputs, outputs),
@@ -190,7 +221,7 @@ class Trainer:
             losses[f'{key.lower()}_rmse_un'] = rmse_loss((out + 1) / 2, (tar + 1) / 2)
                 
         self.optim.zero_grad()
-        loss.backward()
+        self.accelerator.backward(loss)
         self.optim.step()
 
         # Log losses
@@ -225,8 +256,8 @@ class Trainer:
 
         loss_discr = 0.5 * (loss_real + loss_fake)
 
-        optim.zero_grad()
-        loss_discr.backward()
-        optim.step()
+        self.optim.zero_grad()
+        self.accelerator.backward(loss)
+        self.optim.step()
 
         return loss_discr
