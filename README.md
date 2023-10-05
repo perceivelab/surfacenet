@@ -30,7 +30,7 @@ Furthermore, **SurfaceNet** exhibits a remarkable ability in generating high-qua
 
 ## Method
 ![alt text](https://github.com/perceivelab/surfacenet/blob/main/imgs/figures/framework.png?raw=true)
-<!--
+
 ## Instructions   
 First, install dependencies   
 ```bash
@@ -38,18 +38,17 @@ First, install dependencies
 git clone https://github.com/perceivelab/surfacenet
 
 # install requirements 
-cd surfacenet
+cd surfacenet/src
 pip install -r requirements.txt
  ```   
  Next, navigate to the main and run it to strat the training.   
  ```bash
-# module folder
-cd surfacenet
+# src folder
+cd surfacenet/src
 
 # run training   
-python main.py    
+accelerate launch train.py --tag ... --dataset ... --logdir ...
 ```
--->
 
 
 ### Citation   
