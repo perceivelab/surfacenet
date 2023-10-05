@@ -1,8 +1,8 @@
 textures_mapping = {
-    "Diffuse": 3,
-    "Normal": 3,
-    "Roughness": 1,
-    "Specular": 3
+    "diffuse": 3,
+    "normal": 3,
+    "roughness": 1,
+    "specular": 3
 }
 
 texture_maps = list(textures_mapping.keys())

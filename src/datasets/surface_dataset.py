@@ -42,7 +42,7 @@ class SurfaceDataset(Dataset):
         maps = {}
 
         for texture_map in texture_maps:
-            src = folder/(texture_map+".jpg")
+            src = folder/(texture_map+".png")
             image = Image.open(src).convert("RGB")
 
             if textures_mapping[texture_map] == 1:
@@ -55,7 +55,7 @@ class SurfaceDataset(Dataset):
         folder_render = folder/"render"
         render = random.sample(os.listdir(folder_render), 1)[0]
         render = Image.open(folder_render/render).convert("RGB")
-        maps["Render"] = self.transforms(render)
+        maps["render"] = self.transforms(render)
 
         return maps
 
@@ -63,7 +63,7 @@ class PicturesDataset(Dataset):
     def __init__(self, dset_dir, load_size=256):
 
         self.dset_dir = Path(dset_dir)
-        self.files = list(self.dset_dir.glob('*.jpg'))
+        self.files = list(self.dset_dir.glob('*.png'))
 
         self.transforms = MapTransform(load_size)
 

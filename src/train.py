@@ -1,10 +1,11 @@
-from datasets.surface_dataset import PicturesDataset, SurfaceDataset
-from trainers.trainer import Trainer
-from utils.parser import parse
+from pathlib import Path
 
 from accelerate import Accelerator
 from accelerate.tracking import TensorBoardTracker
 
+from datasets.surface_dataset import PicturesDataset, SurfaceDataset
+from trainers.trainer import Trainer
+from utils.parser import parse
 
 if __name__ == '__main__':
     # Get params
@@ -13,16 +14,16 @@ if __name__ == '__main__':
     #setup accelerator
     tracker = TensorBoardTracker(run_name=args.tag, logging_dir=args.logdir)
     accelerator = Accelerator(log_with=tracker)
-    accelerator.init_trackers("surfacenet", config={}, run_name=args.tag)
+    accelerator.init_trackers("surfacenet")
 
     # Create datasets
     dset_train = SurfaceDataset(
-        args.dataset/'train',
+        Path(args.dataset)/'train',
         args.resize
     )
 
     dset_test = SurfaceDataset(
-        args.dataset/'test',
+        Path(args.dataset)/'test',
         args.resize
     )
 
@@ -33,11 +34,11 @@ if __name__ == '__main__':
 
     if args.train_real:
         datasets['train']['real'] = PicturesDataset(
-            args.dataset/'train',
+            Path(args.dataset)/'train',
             args.resize
         )
         datasets['test']['real'] = PicturesDataset(
-            args.dataset/'test',
+            Path(args.dataset)/'test',
             args.resize
         )
 

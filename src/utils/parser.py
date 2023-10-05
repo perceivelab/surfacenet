@@ -6,7 +6,7 @@ def parse():
     # Dataset options
     parser.add_argument('--dataset')
     parser.add_argument('--resize', type=int, default=256)
-    parser.add_argument('--workers', type=int, default=-1, help='-1 for <batch size> threads, 0 for main thread, >0 for background threads')
+    parser.add_argument('--workers', type=int, default=0, help='-1 for <batch size> threads, 0 for main thread, >0 for background threads')
     # Experiment options
     parser.add_argument('-t', '--tag', default='default')
     parser.add_argument('--logdir', default='exps', type=Path)
