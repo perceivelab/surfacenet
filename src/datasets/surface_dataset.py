@@ -26,7 +26,7 @@ class SurfaceDataset(Dataset):
         self.materials = []
 
         self.materials = [{"name": x, "folder": self.dset_dir / x}
-                          for x in os.listdir(self.dset_dir)]
+                          for x in self.dset_dir.iterdir()]
 
         self.load_size = load_size
         self.transforms = MapTransform(load_size)

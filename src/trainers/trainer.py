@@ -181,11 +181,10 @@ class Trainer:
             real_batch = torch.cat([inputs, *[targets[x]
                                               for x in texture_maps]], 1)
             fake_batch = torch.cat(
-                [inputs, *[outputs[x].detach() for x in texture_maps]], 1)
+                [inputs, *[outputs[x] for x in texture_maps]], 1)
             
             # Train patch discriminator
-            self.__train_discr(self.discr,
-                               self.optim_discr, real_batch, fake_batch.detach())
+            self.__train_discr(real_batch, fake_batch.detach())
 
             # Train generator
             if step_idx >= self.args.adv_start:
@@ -244,20 +243,20 @@ class Trainer:
         return losses
     
 
-    def __train_discr(self, net, optim, real_batch, fake_batch):
+    def __train_discr(self, real_batch, fake_batch):
 
-        pred_real = net(real_batch)
+        pred_real = self.discr(real_batch)
         loss_real = mse_loss(pred_real, torch.ones(
             pred_real.shape, device=self.device))
 
-        pred_fake = net(fake_batch)
+        pred_fake = self.discr(fake_batch)
         loss_fake = mse_loss(pred_fake, torch.zeros(
             pred_fake.shape, device=self.device))
 
         loss_discr = 0.5 * (loss_real + loss_fake)
 
-        self.optim.zero_grad()
+        self.optim_discr.zero_grad()
         self.accelerator.backward(loss_discr)
-        self.optim.step()
+        self.optim_discr.step()
 
         return loss_discr
