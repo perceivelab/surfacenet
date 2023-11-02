@@ -70,7 +70,7 @@ class Trainer:
 
         # Params
         self.alpha_m = 0.88
-        self.alpha_adv = 0.15
+        self.alpha_adv = 0.015
 
         # Compute splits names
         splits = list(datasets.keys())
@@ -112,19 +112,10 @@ class Trainer:
             with torch.no_grad():
                 self.run_epoch(epoch, train=False)
 
-            torch.cuda.empty_cache()
-
             if epoch % self.args.save_every == 0:
-                checkpoint = {
-                    'epoch': epoch,
-                    'net': self.net.state_dict(),
-                    'optim': self.optim.state_dict(),
-                }
-                if self.args.train_adversarial:
-                    checkpoint['discr'] = self.discr.state_dict()
-                    checkpoint['optim_discr'] = self.optim_discr.state_dict()
-
-                self.accelerator.save(checkpoint, f"surfacenet_{epoch}.pth")
+                # Save the starting state
+                logging_dir = Path(self.tracker.logging_dir)/"checkpoints"/f"checkpoint_{epoch}"
+                self.accelerator.save_state(output_dir=logging_dir)
 
 
     def run_epoch(self, epoch_idx, train=True):
@@ -154,10 +145,6 @@ class Trainer:
                     log_maps[f"{split}/{k}"] = image.unsqueeze(0)
 
                 self.tracker.log_images(log_maps, step_idx)
-        
-        # Save the starting state
-        logging_dir = Path(self.tracker.logging_dir)/"checkpoints"/f"checkpoint_{epoch_idx}"
-        self.accelerator.save_state(output_dir=logging_dir)
 
 
     def forward_batch(self, batch, step_idx, train=True, real=False):

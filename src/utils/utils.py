@@ -7,7 +7,8 @@ def make_plot_maps(inputs, outputs):
 
     def chain_maps(maps, i):
         render = inputs[i].unsqueeze(0)
-        return (torch.cat([render, *[maps[key][i].unsqueeze(0).expand(1, 3, *map_size) for key in texture_maps]], 0) + 1) / 2
+        grid = (torch.cat([render, *[maps[key][i].unsqueeze(0).expand(1, 3, *map_size) for key in texture_maps]], 0) + 1) / 2
+        return grid.clamp(0, 1)
 
     maps = []
 
