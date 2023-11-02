@@ -1,10 +1,8 @@
-from itertools import islice
-import os
+from pathlib import Path
 
 import torch
-import torch.nn.functional as F
 import torch.optim
-from torch.nn.functional import binary_cross_entropy, l1_loss, mse_loss
+from torch.nn.functional import l1_loss, mse_loss
 from torch.utils.data import DataLoader
 from torchvision.utils import make_grid
 from tqdm import tqdm
@@ -39,6 +37,9 @@ class Trainer:
         # Create optimizer
         optim_class = getattr(torch.optim, args.optim)
 
+        # Prepare objects to checkpoint
+        object_to_checkpoint = []
+
         # Setup models
         net = SurfaceNet()
         net.to(self.device)
@@ -47,6 +48,9 @@ class Trainer:
 
         self.net = self.accelerator.prepare_model(net)
         self.optim = self.accelerator.prepare_optimizer(optim, device_placement=True)
+
+        object_to_checkpoint.append(self.net)
+        object_to_checkpoint.append(self.optim)
 
         # Setup adversarial training
         if args.train_adversarial:
@@ -57,6 +61,12 @@ class Trainer:
 
             self.discr = self.accelerator.prepare_model(discr)
             self.optim_discr = self.accelerator.prepare_optimizer(optim_discr, device_placement=True)
+
+            object_to_checkpoint.append(self.discr)
+            object_to_checkpoint.append(self.optim_discr)
+
+        # Register objects to checkpoint
+        self.accelerator.register_for_checkpointing(*object_to_checkpoint)
 
         # Params
         self.alpha_m = 0.88
@@ -144,6 +154,10 @@ class Trainer:
                     log_maps[f"{split}/{k}"] = image.unsqueeze(0)
 
                 self.tracker.log_images(log_maps, step_idx)
+        
+        # Save the starting state
+        logging_dir = Path(self.tracker.logging_dir)/"checkpoints"/f"checkpoint_{epoch_idx}"
+        self.accelerator.save_state(output_dir=logging_dir)
 
 
     def forward_batch(self, batch, step_idx, train=True, real=False):
