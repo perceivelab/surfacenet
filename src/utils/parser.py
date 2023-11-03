@@ -21,7 +21,7 @@ def parse():
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--optim', default='Adam')
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--resume')
+    parser.add_argument('--resume', type=str)
     parser.add_argument('--epochs', type=int, default=20000)
     parser.add_argument('--device', type=str, choices=['cuda', 'cpu'], default='cuda')
 

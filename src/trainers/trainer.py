@@ -27,6 +27,9 @@ class Trainer:
         self.args = args
         self.device = torch.device(self.accelerator.device)
 
+        # Start state
+        self.epoch = 0
+
         # Optimizer params
         optim_params = {'lr': args.lr}
         if args.optim == 'Adam':
@@ -67,6 +70,9 @@ class Trainer:
 
         # Register objects to checkpoint
         self.accelerator.register_for_checkpointing(*object_to_checkpoint)
+        if args.resume:
+            self.accelerator.load_state(args.resume)
+            self.epoch = int(args.resume.split("_")[-1])
 
         # Params
         self.alpha_m = 0.88
@@ -104,7 +110,7 @@ class Trainer:
 
     def train(self):
         # Start training
-        for epoch in range(self.args.epochs):
+        for epoch in range(self.epoch, self.args.epochs):
             self.run_epoch(epoch, train=True)
 
             torch.cuda.empty_cache()
@@ -195,7 +201,7 @@ class Trainer:
                 pred_patch = self.discr(gen_batch)
 
                 discr_loss = self.alpha_adv * \
-                    self.mse_loss(pred_patch, torch.ones(
+                    mse_loss(pred_patch, torch.ones(
                         pred_patch.shape, device=self.device))
 
                 losses[f'adv_loss'] = discr_loss.item()
